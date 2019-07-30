@@ -2,6 +2,7 @@ package com.klur.stock.batch.config;
 
 import com.klur.stock.JobCompletionNotificationListener;
 import com.klur.stock.backend.entity.StockPriceDTO;
+import com.klur.stock.backend.service.StockAssetService;
 import com.klur.stock.batch.processor.StockItemProcessor;
 import com.klur.stock.batch.reader.RestStockItemReader;
 import org.springframework.batch.core.Job;
@@ -11,35 +12,31 @@ import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.ItemReader;
-import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider;
-import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.JpaItemWriter;
-import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
-import org.springframework.batch.item.database.builder.JpaItemWriterBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.persistence.EntityManagerFactory;
-import javax.sql.DataSource;
 import java.io.IOException;
 
 @Configuration
 @EnableBatchProcessing
 public class StockBatchConfiguration {
 
-    @Autowired
-    EntityManagerFactory entityManagerFactory;
+    private final EntityManagerFactory entityManagerFactory;
+    private final JobBuilderFactory jobBuilderFactory;
+    private final StepBuilderFactory stepBuilderFactory;
 
-    @Autowired
-    public JobBuilderFactory jobBuilderFactory;
-
-    @Autowired
-    public StepBuilderFactory stepBuilderFactory;
+    public StockBatchConfiguration(EntityManagerFactory entityManagerFactory, JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory) {
+        this.entityManagerFactory = entityManagerFactory;
+        this.jobBuilderFactory = jobBuilderFactory;
+        this.stepBuilderFactory = stepBuilderFactory;
+    }
 
     @Bean
-    public ItemReader<StockPriceDTO> StockReader() throws IOException {
-        return new RestStockItemReader();
+    public ItemReader<StockPriceDTO> StockReader(StockAssetService stockAssetService) throws IOException {
+        return new RestStockItemReader(stockAssetService);
     }
 
     @Bean
@@ -65,10 +62,10 @@ public class StockBatchConfiguration {
     }
 
     @Bean
-    public Step stockStep1 (JpaItemWriter<StockPriceDTO> writer) throws IOException {
+    public Step stockStep1 (StockAssetService stockAssetService, JpaItemWriter<StockPriceDTO> writer) throws IOException {
         return stepBuilderFactory.get("stockStep1")
                 .<StockPriceDTO, StockPriceDTO> chunk(1)
-                .reader(StockReader())
+                .reader(StockReader(stockAssetService))
                 .processor(StockProcessor())
                 .writer(writer)
                 .build();

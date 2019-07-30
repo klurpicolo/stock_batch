@@ -3,6 +3,7 @@ package com.klur.stock.batch.reader;
 import com.klur.stock.backend.entity.StockAssetDTO;
 import com.klur.stock.backend.entity.StockPriceDTO;
 import com.klur.stock.backend.service.StockAssetService;
+import com.klur.stock.backend.service.StockPriceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemReader;
@@ -10,6 +11,7 @@ import org.springframework.batch.item.NonTransientResourceException;
 import org.springframework.batch.item.ParseException;
 import org.springframework.batch.item.UnexpectedInputException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import yahoofinance.Stock;
 import yahoofinance.YahooFinance;
 
@@ -18,17 +20,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@Component
 public class RestStockItemReader implements ItemReader<StockPriceDTO> {
 
     private static final Logger log = LoggerFactory.getLogger(RestStockItemReader.class);
     private List<StockPriceDTO> stockList;
     private boolean isStockDataFetched = false;
 
-    @Autowired
-    private StockAssetService stockAssetService;
+//    @Autowired
+    private final StockAssetService stockAssetService;
+
+    public RestStockItemReader(StockAssetService stockAssetService){
+        this.stockAssetService = stockAssetService;
+    }
 
     @Override
-    public StockPriceDTO read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {
+    public StockPriceDTO read() throws Exception {
         StockPriceDTO result;
 
         if(!isStockDataFetched){
@@ -50,14 +57,16 @@ public class RestStockItemReader implements ItemReader<StockPriceDTO> {
 //        String[] symbols = new String[]{"SCC.BK","SCB.BK","PTT.BK","BBL.BK"};
 
         List<StockAssetDTO> stockAssetList = stockAssetService.getAllStockAsset();
+        List<StockPriceDTO> stockList = new ArrayList<>();
+        log.info("Reader fetch assets : " + stockAssetList.size());
 
-        List<String> symbolList = new ArrayList<String>();
+        if(stockAssetList.isEmpty()){
+            return stockList;
+        }
+
+        List<String> symbolList = new ArrayList<>();
         stockAssetList.forEach(stock -> symbolList.add(stock.getSymbol()));
         String[] symbols = symbolList.toArray(new String[stockAssetList.size()]);
-
-        log.info("Reader fetch assets : " + symbols.length);
-
-        List<StockPriceDTO> stockList = new ArrayList<StockPriceDTO>();
 
         try {
             Map<String, Stock> symbolStockMap = YahooFinance.get(symbols);
@@ -70,6 +79,7 @@ public class RestStockItemReader implements ItemReader<StockPriceDTO> {
                             .stockExchange(stock.getStockExchange())
                                     .ask(stock.getQuote().getAsk())
                                     .bid(stock.getQuote().getBid())
+                                    .lastTradeTime(stock.getQuote().getLastTradeTime())
                             .build()
                     )
             );

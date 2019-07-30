@@ -24,6 +24,7 @@ public class StockItemProcessor implements ItemProcessor<StockPriceDTO, StockPri
                 .stockExchange(stockExchange)
                 .ask(stockPriceDTO.getAsk())
                 .bid(stockPriceDTO.getBid())
+                .lastTradeTime(stockPriceDTO.getLastTradeTime())
                 .build();
 
         log.info("Converting (" + stockPriceDTO + ") into (" + transformedStock + ")");

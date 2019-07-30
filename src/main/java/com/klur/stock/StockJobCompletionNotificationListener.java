@@ -8,6 +8,7 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.listener.JobExecutionListenerSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
 
 //@Component
 public class StockJobCompletionNotificationListener extends JobExecutionListenerSupport {
@@ -26,14 +27,7 @@ public class StockJobCompletionNotificationListener extends JobExecutionListener
         if(jobExecution.getStatus() == BatchStatus.COMPLETED) {
             log.info("!!! JOB FINISHED! Time to verify the results");
 
-
-
             jdbcTemplate.query("SELECT symbol, name FROM stock",
-//                    (rs, row) -> new StockPriceDTO(
-//                            rs.getString(1),
-//                            rs.getString(2),
-//                            "",
-//                            "")
                     (rs, row) -> StockPriceDTO.builder()
                     .symbol(rs.getString(1))
                     .name(rs.getString(2))

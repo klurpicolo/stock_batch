@@ -7,11 +7,12 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.util.Calendar;
 
 @Data
 @Builder
 @Entity
-@Table(name="stock")
+@Table(name="STOCK")
 @NoArgsConstructor
 @AllArgsConstructor
 public class StockPriceDTO {
@@ -25,4 +26,5 @@ public class StockPriceDTO {
     private String stockExchange;
     private BigDecimal ask;
     private BigDecimal bid;
+    private Calendar lastTradeTime;
 }

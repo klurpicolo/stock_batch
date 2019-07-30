@@ -14,22 +14,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 @EnableScheduling
 public class StockApplication {
 
-	@Autowired
-	JobLauncher jobLauncher;
-
-	@Autowired
-	Job job;
-
 	public static void main(String[] args) {
 		SpringApplication.run(StockApplication.class, args);
 	}
 
-	@Scheduled(cron = "0 */1 * * * ?")
-	public void perform() throws Exception {
-		JobParameters params = new JobParametersBuilder()
-				.addString("JobID", String.valueOf(System.currentTimeMillis()))
-				.toJobParameters();
-		jobLauncher.run(job, params);
-	}
+
 
 }
