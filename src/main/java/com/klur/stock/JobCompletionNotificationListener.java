@@ -1,6 +1,7 @@
 package com.klur.stock;
 
 import com.klur.stock.backend.entity.StockPriceDTO;
+import com.klur.stock.backend.service.StockPriceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.BatchStatus;
@@ -18,6 +19,9 @@ public class JobCompletionNotificationListener extends JobExecutionListenerSuppo
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
+    private StockPriceService stockPriceService;
+
+    @Autowired
     public JobCompletionNotificationListener(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -27,12 +31,10 @@ public class JobCompletionNotificationListener extends JobExecutionListenerSuppo
         if(jobExecution.getStatus() == BatchStatus.COMPLETED) {
             log.info("!!! JOB FINISHED! Time to verify the results");
 
-            jdbcTemplate.query("SELECT symbol, name FROM stock",
-                    (rs, row) -> StockPriceDTO.builder()
-                            .symbol(rs.getString(1))
-                            .name(rs.getString(2))
-                            .build()
-            ).forEach(person -> log.info("Found <" + person + "> in the database."));
+            stockPriceService.getAllStockPrice().forEach(
+                    price -> log.info("Found <" + price + "> in the database")
+            );
+
         }
     }
 

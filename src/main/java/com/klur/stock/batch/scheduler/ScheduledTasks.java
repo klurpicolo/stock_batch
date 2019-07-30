@@ -19,4 +19,6 @@ public class ScheduledTasks {
     public void scheduleTaskWithFixedRate() {
         logger.info("Fixed Rate Task :: Execution Time - {}", dateTimeFormatter.format(LocalDateTime.now()) );
     }
+
+
 }

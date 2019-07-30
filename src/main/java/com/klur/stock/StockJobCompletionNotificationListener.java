@@ -26,6 +26,8 @@ public class StockJobCompletionNotificationListener extends JobExecutionListener
         if(jobExecution.getStatus() == BatchStatus.COMPLETED) {
             log.info("!!! JOB FINISHED! Time to verify the results");
 
+
+
             jdbcTemplate.query("SELECT symbol, name FROM stock",
 //                    (rs, row) -> new StockPriceDTO(
 //                            rs.getString(1),
