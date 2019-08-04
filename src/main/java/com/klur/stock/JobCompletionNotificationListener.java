@@ -15,15 +15,10 @@ import org.springframework.stereotype.Component;
 public class JobCompletionNotificationListener extends JobExecutionListenerSupport {
 
     private static final Logger log = LoggerFactory.getLogger(JobCompletionNotificationListener.class);
+    private final StockPriceService stockPriceService;
 
-    private final JdbcTemplate jdbcTemplate;
-
-    @Autowired
-    private StockPriceService stockPriceService;
-
-    @Autowired
-    public JobCompletionNotificationListener(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public JobCompletionNotificationListener(StockPriceService stockPriceService) {
+        this.stockPriceService = stockPriceService;
     }
 
     @Override
@@ -34,7 +29,6 @@ public class JobCompletionNotificationListener extends JobExecutionListenerSuppo
             stockPriceService.getAllStockPrice().forEach(
                     price -> log.info("Found <" + price + "> in the database")
             );
-
         }
     }
 
